@@ -1,0 +1,33 @@
+journal text: thoughts and decisions.
+
+freeing the allocation (afree): here are different scenatios how it can be implmeneted:
+  
+  1.receive a pointer :"afree(char *ptr);" and go from the current pointer backwards to ptr,
+  comparing the values :"while(ptr!= (--fp))" and along the way re-init all the elements back
+  to '\0'.
+
+  |__ begs the question : should all the pointers in between be released, if the requested ptr
+    is not the last to be freed? 
+    |__ begs the answer : just make a last ref to the lastly requested array, and only free 
+      it if the pointer is equal to that.
+        |__ problem: updating the last requested?
+          |__solution :
+            \last-=2; // to jump over the last '\0', belonging to the second previous array
+            \while(*last!='\0')last--;
+            set to the one after another previously requested array's end,which means after a '\0'.
+  --> too much bullshit
+  
+  2.or take the book's approach by only updating the last and freeing only until the last point, and 
+  return the current free pointer (which now supposedly points to the start of the last allocated arr),
+  so that the end-user could at least compare. --> approached.
+
+
+/* Theory in alloc.c:
+ * after every call on alloc(), you have n+1 elements taken. that means after x calls,
+ * you will have x unwanted elements, only necessary for marking and movement.
+ * if we hold a number of actual elements, (by updating it via elems+=n in every alloc
+ * call), we can find out how many times alloc has been called, thus how many refs there
+ * are to the current buffer.
+ * which is useless tbh
+ * */
+
